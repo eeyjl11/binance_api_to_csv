@@ -44,7 +44,7 @@ def convert_to_dataframe(data):
     ])
 
     # Convert timestamp to datetime
-    df["datetime"] = pd.to_datetime(df["timestamp"], unit='ms')
+    df["datetime"] = pd.to_datetime(df["timestamp"], unit="ms")
 
     df = df[["datetime", "open", "high", "low", "close", "volume"]]
     df.set_index("datetime", inplace = True)
@@ -69,8 +69,13 @@ def get_full_data(symbol, interval, start_time, end_time):
 
     # Loops as data has to be broken up into chunks due to the 1500 limit to the binance api
     while start_time < end_time:
-        df = convert_to_dataframe(fetch_binance_data(symbol, interval, start_time, end_time, limit))
+        data = fetch_binance_data(symbol, interval, start_time, end_time, limit)
+        df = convert_to_dataframe(data)
         df_list.append(df)
+
+        if df.empty:
+            break
+
         start_time = int(df.index.max().timestamp() * 1e3) + 1
 
         # Sleep to avoid rate limit
@@ -90,7 +95,7 @@ def allData(symbol, interval):
     RETURNS:
         df -> Returns dataframe of candlestick data for symbol
     """
-    start_time = int(pd.Timestamp("2017-01-01").timestamp() * 1000)  # Start date in milliseconds
+    start_time = int(pd.Timestamp("2017-01-01").timestamp() * 1e3)  # Start date in milliseconds
     now = datetime.now().timestamp()*1e3 # Get current timestamp in milliseconds
     end_time = int(now)  # End date in milliseconds
     
@@ -98,7 +103,7 @@ def allData(symbol, interval):
     crypto_data = get_full_data(symbol, interval, start_time, end_time)
 
     # Save data to CSV
-    csv_filename = f"{symbol}_{interval}_data.csv"
+    csv_filename = f"{symbol}_{interval}_all_data.csv"
     crypto_data.to_csv(f"Data/{csv_filename}")
     print(f"Data saved to {csv_filename}")
 
@@ -126,5 +131,31 @@ def specificData(symbol,interval, startDate, endDate):
     crypto_data.to_csv(f"Data/{csv_filename}")
     print(f"Data saved to {csv_filename}")
 
-specificData("BTCUSDT", "1m", "2021-10-01", "2021-10-03")
-#allData("BTCUSDT", "1w")
+def updateAllData(symbol, interval):
+    """
+    Updates an already created instance of all data to current timestamp
+
+    PARAMETERS:
+        symbol -> the symbol of the cryptocurrency you want to update
+        interval -> the time interval of the crypto you want to update
+
+    RETURNS:
+        df -> Returns updated dataframe for symbol
+    """
+    # Load in corresponding csv
+    csv_filename = f"{symbol}_{interval}_all_data.csv"
+    crypto_data = pd.read_csv(f"Data/{csv_filename}", parse_dates=["datetime"], index_col="datetime")
+    
+    start_time = int(crypto_data.index.max().timestamp() * 1e3) + 1 # Get last timestamp in milliseconds
+    now = datetime.now().timestamp()*1e3 # Get current timestamp in milliseconds
+    end_time = int(now)
+
+    df = get_full_data(symbol, interval, start_time, end_time)
+    crypto_data = pd.concat([crypto_data, df])
+
+    crypto_data.to_csv(f"Data/{csv_filename}")
+    print(f"Data saved to {csv_filename}")
+
+#specificData("BTCUSDT", "1m", "2025-01-12", "2025-01-13")
+#allData("BTCUSDT", "1m")
+#updateAllData("BTCUSDT", "1m")
