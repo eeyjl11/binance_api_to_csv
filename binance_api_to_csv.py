@@ -5,18 +5,17 @@ from datetime import datetime
 
 def fetchBinanceData(symbol, interval, startTime, endTime, limit):
     """
-
     Returns candlestick data from binanceapi: https://developers.binance.com/docs/derivatives/coin-margined-futures/market-data/Kline-Candlestick-Data
 
-    PARAMETERS:
-        symbol -> the symbol of the cryptocurrency you want to save
-        interval -> the time interval of the candlestick
-        startTime -> the date and time you wish to save data from
-        endTime -> the date and time you wish to save data to
-        limit -> amount of data to save per api call
+    Args:
+        symbol: The symbol of the cryptocurrency you want to save
+        interval: The time interval of the candlestick
+        startTime: The date and time you wish to save data from
+        endTime: The date and time you wish to save data to
+        limit: Amount of data to save per api call (hardcoded to maximum value of 1500)
 
-    RETURNS:
-        response.json -> returns json response of api call
+    Returns:
+        response.json: Returns json response of api call
     """
     baseUrl = "https://api.binance.com/api/v1/klines"
     params = {
@@ -33,11 +32,11 @@ def convertToDataframe(data):
     """
     Converts json api response to a pandas dataframe
     
-    PARAMETERS:
-        data -> data return from binance api
+    Args:
+        data: Data return from binance api
 
-    RETURNS:
-        df -> dataframe created from binance data
+    Returns:
+        df: Dataframe created from binance data
     """
     df = pd.DataFrame(data, columns=[
         "timestamp", "open", "high", "low", "close", "volume", "closeTime", "baseAssetVolume", "numberOfTrades", "takerBuyVolume", "takerBuyBaseAssetVolume", "Ignore"
@@ -55,14 +54,14 @@ def getFullData(symbol, interval, startTime, endTime):
     """
     Returns the full range of data from start and end date, due to limit restrictions from api
 
-    PARAMETERS:
-        symbol -> the symbol of the cryptocurrency you want to save
-        interval -> the time interval of the candlestick
-        startTime -> the date and time you wish to save data from
-        endTime -> the date and time you wish to save data to
+    Args:
+        symbol: The symbol of the cryptocurrency you want to save
+        interval: The time interval of the candlestick
+        startTime: The date and time you wish to save data from
+        endTime: The date and time you wish to save data to
 
-    RETURNS:
-        df -> Returns dataframe of candlestick data for symbol over requested time period
+    Returns:
+        df: Returns dataframe of candlestick data for symbol over requested time period
     """
     dfList = []
     limit = 1500
@@ -88,12 +87,12 @@ def allData(symbol, interval):
     """
     Returns all historical data of symbol
 
-    PARAMETERS:
-        symbol -> the symbol of the cryptocurrency you want to save
-        interval -> the time interval of the candlestick
+    Args:
+        symbol: The symbol of the cryptocurrency you want to save
+        interval: The time interval of the candlestick
 
-    RETURNS:
-        df -> Returns dataframe of candlestick data for symbol
+    Returns:
+        df: Returns dataframe of candlestick data for symbol
     """
     startTime = int(pd.Timestamp("2017-01-01").timestamp() * 1e3)  # Start date in milliseconds
     now = datetime.now().timestamp()*1e3 # Get current timestamp in milliseconds
@@ -111,14 +110,14 @@ def specificData(symbol,interval, startDate, endDate):
     """
     Returns the data from start to end date for requested symbol
 
-    PARAMETERS:
-        symbol -> the symbol of the cryptocurrency you want to save
-        interval -> the time interval of the candlestick
-        startTime -> the date and time you wish to save data from (YYY-MM-DD)
-        endTime -> the date and time you wish to save data to (YYY-MM-DD)
+    Args:
+        symbol: The symbol of the cryptocurrency you want to save
+        interval: The time interval of the candlestick
+        startTime: The date and time you wish to save data from (YYY-MM-DD)
+        endTime: The date and time you wish to save data to (YYY-MM-DD)
 
-    RETURNS:
-        df -> Returns dataframe of candlestick data for symbol over requested time period
+    Returns:
+        df: Returns dataframe of candlestick data for symbol over requested time period
     """
     startTime = int(pd.Timestamp(startDate).timestamp() * 1000)  # Start date in milliseconds
     endTime = int(pd.Timestamp(endDate).timestamp() * 1000)  # End date in milliseconds
@@ -135,12 +134,12 @@ def updateAllData(symbol, interval):
     """
     Updates an already created instance of all data to current timestamp
 
-    PARAMETERS:
-        symbol -> the symbol of the cryptocurrency you want to update
-        interval -> the time interval of the crypto you want to update
+    Args:
+        symbol: The symbol of the cryptocurrency you want to update
+        interval: The time interval of the crypto you want to update
 
-    RETURNS:
-        df -> Returns updated dataframe for symbol
+    Returns:
+        df: Returns updated dataframe for symbol
     """
     # Load in corresponding csv
     csvFilename = f"{symbol}_{interval}_all_data.csv"
