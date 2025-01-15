@@ -3,7 +3,7 @@ import pandas as pd
 import time
 from datetime import datetime
 
-def fetch_binance_data(symbol, interval, start_time, end_time, limit):
+def fetchBinanceData(symbol, interval, startTime, endTime, limit):
     """
 
     Returns candlestick data from binanceapi: https://developers.binance.com/docs/derivatives/coin-margined-futures/market-data/Kline-Candlestick-Data
@@ -11,25 +11,25 @@ def fetch_binance_data(symbol, interval, start_time, end_time, limit):
     PARAMETERS:
         symbol -> the symbol of the cryptocurrency you want to save
         interval -> the time interval of the candlestick
-        start_time -> the date and time you wish to save data from
-        end_time -> the date and time you wish to save data to
+        startTime -> the date and time you wish to save data from
+        endTime -> the date and time you wish to save data to
         limit -> amount of data to save per api call
 
     RETURNS:
         response.json -> returns json response of api call
     """
-    base_url = "https://api.binance.com/api/v1/klines"
+    baseUrl = "https://api.binance.com/api/v1/klines"
     params = {
         "symbol": symbol,
         "interval": interval,
-        "startTime": start_time,
-        "endTime": end_time,
+        "startTime": startTime,
+        "endTime": endTime,
         "limit": limit
     }
-    response = requests.get(base_url, params=params)
+    response = requests.get(baseUrl, params=params)
     return response.json()
 
-def convert_to_dataframe(data):
+def convertToDataframe(data):
     """
     Converts json api response to a pandas dataframe
     
@@ -51,38 +51,38 @@ def convert_to_dataframe(data):
 
     return df
 
-def get_full_data(symbol, interval, start_time, end_time):
+def getFullData(symbol, interval, startTime, endTime):
     """
     Returns the full range of data from start and end date, due to limit restrictions from api
 
     PARAMETERS:
         symbol -> the symbol of the cryptocurrency you want to save
         interval -> the time interval of the candlestick
-        start_time -> the date and time you wish to save data from
-        end_time -> the date and time you wish to save data to
+        startTime -> the date and time you wish to save data from
+        endTime -> the date and time you wish to save data to
 
     RETURNS:
         df -> Returns dataframe of candlestick data for symbol over requested time period
     """
-    df_list = []
+    dfList = []
     limit = 1500
 
     # Loops as data has to be broken up into chunks due to the 1500 limit to the binance api
-    while start_time < end_time:
-        data = fetch_binance_data(symbol, interval, start_time, end_time, limit)
-        df = convert_to_dataframe(data)
-        df_list.append(df)
+    while startTime < endTime:
+        data = fetchBinanceData(symbol, interval, startTime, endTime, limit)
+        df = convertToDataframe(data)
+        dfList.append(df)
 
         if df.empty:
             break
 
-        start_time = int(df.index.max().timestamp() * 1e3) + 1
+        startTime = int(df.index.max().timestamp() * 1e3) + 1
 
         # Sleep to avoid rate limit
         time.sleep(1)
 
     # Combine dataframe and return
-    return pd.concat(df_list)
+    return pd.concat(dfList)
 
 def allData(symbol, interval):
     """
@@ -95,17 +95,17 @@ def allData(symbol, interval):
     RETURNS:
         df -> Returns dataframe of candlestick data for symbol
     """
-    start_time = int(pd.Timestamp("2017-01-01").timestamp() * 1e3)  # Start date in milliseconds
+    startTime = int(pd.Timestamp("2017-01-01").timestamp() * 1e3)  # Start date in milliseconds
     now = datetime.now().timestamp()*1e3 # Get current timestamp in milliseconds
-    end_time = int(now)  # End date in milliseconds
+    endTime = int(now)  # End date in milliseconds
     
     # Fetch the data
-    crypto_data = get_full_data(symbol, interval, start_time, end_time)
+    cryptoData = getFullData(symbol, interval, startTime, endTime)
 
     # Save data to CSV
-    csv_filename = f"{symbol}_{interval}_all_data.csv"
-    crypto_data.to_csv(f"Data/{csv_filename}")
-    print(f"Data saved to {csv_filename}")
+    csvFilename = f"{symbol}_{interval}_all_data.csv"
+    cryptoData.to_csv(f"Data/{csvFilename}")
+    print(f"Data saved to {csvFilename}")
 
 def specificData(symbol,interval, startDate, endDate):
     """
@@ -114,22 +114,22 @@ def specificData(symbol,interval, startDate, endDate):
     PARAMETERS:
         symbol -> the symbol of the cryptocurrency you want to save
         interval -> the time interval of the candlestick
-        start_time -> the date and time you wish to save data from (YYY-MM-DD)
-        end_time -> the date and time you wish to save data to (YYY-MM-DD)
+        startTime -> the date and time you wish to save data from (YYY-MM-DD)
+        endTime -> the date and time you wish to save data to (YYY-MM-DD)
 
     RETURNS:
         df -> Returns dataframe of candlestick data for symbol over requested time period
     """
-    start_time = int(pd.Timestamp(startDate).timestamp() * 1000)  # Start date in milliseconds
-    end_time = int(pd.Timestamp(endDate).timestamp() * 1000)  # End date in milliseconds
+    startTime = int(pd.Timestamp(startDate).timestamp() * 1000)  # Start date in milliseconds
+    endTime = int(pd.Timestamp(endDate).timestamp() * 1000)  # End date in milliseconds
 
     # Fetch the data
-    crypto_data = get_full_data(symbol, interval, start_time, end_time)
+    cryptoData = getFullData(symbol, interval, startTime, endTime)
 
     # Save data to CSV
-    csv_filename = f"{symbol}_{interval}_{startDate}_to_{endDate}.csv"
-    crypto_data.to_csv(f"Data/{csv_filename}")
-    print(f"Data saved to {csv_filename}")
+    csvFilename = f"{symbol}_{interval}_{startDate}_to_{endDate}.csv"
+    cryptoData.to_csv(f"Data/{csvFilename}")
+    print(f"Data saved to {csvFilename}")
 
 def updateAllData(symbol, interval):
     """
@@ -143,18 +143,18 @@ def updateAllData(symbol, interval):
         df -> Returns updated dataframe for symbol
     """
     # Load in corresponding csv
-    csv_filename = f"{symbol}_{interval}_all_data.csv"
-    crypto_data = pd.read_csv(f"Data/{csv_filename}", parse_dates=["datetime"], index_col="datetime")
+    csvFilename = f"{symbol}_{interval}_all_data.csv"
+    cryptoData = pd.read_csv(f"Data/{csvFilename}", parse_dates=["datetime"], index_col="datetime")
     
-    start_time = int(crypto_data.index.max().timestamp() * 1e3) + 1 # Get last timestamp in milliseconds
+    startTime = int(cryptoData.index.max().timestamp() * 1e3) + 1 # Get last timestamp in milliseconds
     now = datetime.now().timestamp()*1e3 # Get current timestamp in milliseconds
-    end_time = int(now)
+    endTime = int(now)
 
-    df = get_full_data(symbol, interval, start_time, end_time)
-    crypto_data = pd.concat([crypto_data, df])
+    df = getFullData(symbol, interval, startTime, endTime)
+    cryptoData = pd.concat([cryptoData, df])
 
-    crypto_data.to_csv(f"Data/{csv_filename}")
-    print(f"Data saved to {csv_filename}")
+    cryptoData.to_csv(f"Data/{csvFilename}")
+    print(f"Data saved to {csvFilename}")
 
 #specificData("BTCUSDT", "1m", "2025-01-12", "2025-01-13")
 #allData("BTCUSDT", "1m")
